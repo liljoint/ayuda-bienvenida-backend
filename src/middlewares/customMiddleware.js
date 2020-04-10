@@ -1,6 +1,7 @@
+
 const customMiddleware = (req, res, next) => {
-  console.log("body:");
   console.log(req.body);
+  console.log("method: " + req.method);
   next();
 };
 

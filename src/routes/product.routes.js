@@ -1,24 +1,24 @@
 const express = require("express");
-const app = express();
+const router = express.Router();
+const { param, check, validationResult } = require("express-validator");
 
-var router = express.Router();
-const { check, validationResult } = require("express-validator");
-
-const customMiddleware = require("../middlewares/customMiddleware");
 const product = require("../controllers/product.controller");
 
-app.use(customMiddleware);
-
-app.get("/api/products/available", (req, res) => {
+router.get("/available", (req, res) => {
   product.list(req, res);
 });
-app.get("/api/products/available/:id", (req, res) => {
+router.get("/available/:id", [param("id").isNumeric(true)], (req, res) => {
+  const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(422).json({ errors: errors.array() });
+      return;
+    }
   product.find(req, res);
 });
 
-app.post(
-  "/api/products/add",
-  [check("user").isLength({ min: 5 })],
+router.post(
+  "/add",
+  [check("user").isLength({ min: 5 }), param("id").isNumeric()],
   (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -28,15 +28,15 @@ app.post(
     product.save(req, res);
   }
 );
-app.put(
-  "/api/products/update/:id",
-  [check("user").isLength({ min: 5 })],
+router.put(
+  "/update/:id",
+  [check("user").isLength({ min: 5 }), param("id").isNumeric()],
   (req, res) => {
     product.update(req, res);
   }
 );
-app.delete("/api/products/delete/:id", (req, res) => {
+router.delete("/delete/:id", (req, res) => {
   product.erase(req, res);
 });
 
-module.exports = app;
+module.exports = router;
